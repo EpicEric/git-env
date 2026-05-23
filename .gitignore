@@ -1,0 +1,5 @@
+.direnv
+.env
+.gitenv
+secrets
+target

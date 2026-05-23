@@ -1,0 +1,16 @@
+[package]
+name = "git-env"
+description = "CLI to encrypt and decrypt sensitive data in a git repository."
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+age = { version = "0.11.3", features = ["ssh", "rsa"] }
+clap = { version = "4.6.1", features = ["derive"] }
+color-eyre = "0.6.5"
+git2 = { version = "0.21.0", features = ["https", "ssh", "vendored-libgit2", "vendored-openssl"] }
+ignore = "0.4.25"
+owo-colors = "4.3.0"
+reqwest = { version = "0.13.3", features = ["blocking"] }
+ssh-key = { version = "0.6.7", features = ["ed25519", "rsa"] }
+tar = "0.4.46"

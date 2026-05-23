@@ -1,0 +1,37 @@
+{
+  "pins": {
+    "crane": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "ipetkov",
+        "repo": "crane"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "edb38893982a3338972bb4a2ec7ce7c29ba10fd9",
+      "url": "https://github.com/ipetkov/crane/archive/edb38893982a3338972bb4a2ec7ce7c29ba10fd9.tar.gz",
+      "hash": "sha256-BLrtr42azquO7MdGFU5a7KiMl3YpFlTeIXqy1fT5GlQ="
+    },
+    "nixpkgs": {
+      "type": "Channel",
+      "name": "nixpkgs-unstable",
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre1003446.a0991c886dc8/nixexprs.tar.xz",
+      "hash": "sha256-5kB9V6f63Htxk/O8vzfXXw/mOCrR6F75GO7fJvQ9pJA="
+    },
+    "rust-overlay": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "oxalica",
+        "repo": "rust-overlay"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "d9973e2ab49747fada06ebbe26cda27eb0220cf1",
+      "url": "https://github.com/oxalica/rust-overlay/archive/d9973e2ab49747fada06ebbe26cda27eb0220cf1.tar.gz",
+      "hash": "sha256-OffE5yuMrSW71zIJNLvtl9MCO6WTAHEjlFPUCvkd/QM="
+    }
+  },
+  "version": 7
+}
