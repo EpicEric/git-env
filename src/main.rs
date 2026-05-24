@@ -1,15 +1,25 @@
 use std::{env::set_current_dir, path::PathBuf};
 
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 
 use git_env::{RestoreConfig, SaveConfig, gitenv_restore, gitenv_save};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
+    #[command(subcommand)]
+    command: CliCommand,
+}
+
+#[derive(Debug, Args)]
+struct SharedArgs {
     /// Path to the git repository.
     #[arg(short, long, value_name = "DIRECTORY")]
     cwdir: Option<PathBuf>,
+
+    /// Don't make changes, simply print to console.
+    #[arg(long)]
+    dry_run: bool,
 
     /// Which git remote to push to/fetch from.
     #[arg(short, long, value_name = "REMOTE", default_value = "origin")]
@@ -22,28 +32,28 @@ struct Cli {
     /// Name of the encrypted archive within the generated git branch.
     #[arg(short, long, value_name = "FILE", default_value = "gitenv-data")]
     encrypted_data: String,
-
-    #[command(subcommand)]
-    command: CliCommand,
 }
 
 #[derive(Subcommand)]
 enum CliCommand {
     /// Encrypt and backup the files specified by the .gitenv configuration.
     Save {
+        #[command(flatten)]
+        args: SharedArgs,
+
         /// Path containing the .gitenv configuration.
         #[arg(short = 'C', long, value_name = "FILE", default_value = ".gitenv")]
         config: PathBuf,
 
-        /// Optional URL containing SSH public keys to encrypt the archive with.
+        /// Optional URL(s) containing SSH public key(s) to encrypt the archive with.
         #[arg(short = 'u', long, value_name = "URL")]
         public_keys_url: Vec<String>,
 
-        /// Optional public SSH keys to encrypt the archive with.
-        #[arg(short, long, value_name = "FILE")]
+        /// Optional public SSH key(s) to encrypt the archive with.
+        #[arg(short = 'k', long, value_name = "FILE")]
         public_key: Vec<PathBuf>,
 
-        /// Optional private SSH keys to encrypt the archive with.
+        /// Optional private SSH key(s) to encrypt the archive with.
         #[arg(short = 'i', long, value_name = "FILE")]
         private_key: Vec<PathBuf>,
 
@@ -57,7 +67,10 @@ enum CliCommand {
     },
     /// Recover and decrypt the data specified by the gitenv archive.
     Restore {
-        /// Private SSH keys to attemtp to decrypt the archive with.
+        #[command(flatten)]
+        args: SharedArgs,
+
+        /// Private SSH key(s) to attempt to decrypt the archive with.
         #[arg(short = 'i', long, value_name = "FILE")]
         private_key: Vec<PathBuf>,
 
@@ -75,41 +88,51 @@ fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let cli = Cli::parse();
 
-    if let Some(cwdir) = cli.cwdir {
-        set_current_dir(cwdir)?;
-    }
-
     match cli.command {
         CliCommand::Save {
+            args,
             config,
             public_keys_url,
             private_key,
             public_key,
             push,
             force,
-        } => gitenv_save(SaveConfig {
-            remote: cli.remote,
-            branch: cli.branch,
-            encrypted_data: cli.encrypted_data,
-            config,
-            public_keys_url,
-            private_key,
-            public_key,
-            push,
-            force,
-        })?,
+        } => {
+            if let Some(cwdir) = args.cwdir {
+                set_current_dir(cwdir)?;
+            }
+            gitenv_save(SaveConfig {
+                dry_run: args.dry_run,
+                remote: args.remote,
+                branch: args.branch,
+                encrypted_data: args.encrypted_data,
+                config,
+                public_keys_url,
+                private_key,
+                public_key,
+                push,
+                force,
+            })?;
+        }
         CliCommand::Restore {
+            args,
             private_key,
             fetch,
             force,
-        } => gitenv_restore(RestoreConfig {
-            remote: cli.remote,
-            branch: cli.branch,
-            encrypted_data: cli.encrypted_data,
-            private_key,
-            fetch,
-            force,
-        })?,
+        } => {
+            if let Some(cwdir) = args.cwdir {
+                set_current_dir(cwdir)?;
+            }
+            gitenv_restore(RestoreConfig {
+                dry_run: args.dry_run,
+                remote: args.remote,
+                branch: args.branch,
+                encrypted_data: args.encrypted_data,
+                private_key,
+                fetch,
+                force,
+            })?;
+        }
     }
 
     Ok(())
