@@ -1,0 +1,49 @@
+{
+  "nodes": {
+    "crane": {
+      "flake": false,
+      "locked": {
+        "path": "./nix/dummy.nix",
+        "type": "path"
+      },
+      "original": {
+        "path": "./nix/dummy.nix",
+        "type": "path"
+      },
+      "parent": []
+    },
+    "nixpkgs": {
+      "flake": false,
+      "locked": {
+        "path": "./nix/dummy.nix",
+        "type": "path"
+      },
+      "original": {
+        "path": "./nix/dummy.nix",
+        "type": "path"
+      },
+      "parent": []
+    },
+    "root": {
+      "inputs": {
+        "crane": "crane",
+        "nixpkgs": "nixpkgs",
+        "rust-overlay": "rust-overlay"
+      }
+    },
+    "rust-overlay": {
+      "flake": false,
+      "locked": {
+        "path": "./nix/dummy.nix",
+        "type": "path"
+      },
+      "original": {
+        "path": "./nix/dummy.nix",
+        "type": "path"
+      },
+      "parent": []
+    }
+  },
+  "root": "root",
+  "version": 7
+}

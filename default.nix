@@ -16,4 +16,4 @@
     pkgs
     craneLib
     ;
-}).devShell
+}).packages.git-env

@@ -8,24 +8,63 @@ You can also push and fetch from your git remote, making it easy to share your s
 
 ## Installation
 
-git-env requires Cargo.
+## Cargo
 
 ```bash
 cargo install --locked --git https://github.com/EpicEric/git-env.git
 ```
 
-## Quickstart
+## Nix
+
+### With npins
+
+```bash
+npins add github EpicEric git-env -b main
+```
+
+### With flakes
+
+```nix
+{
+  inputs = {
+    git-env.url = "github:EpicEric/git-env";
+  };
+
+  outputs =
+    {
+      nixpkgs,
+      git-env,
+      ...
+    }:
+    {
+      nixosConfigurations.my-nixos-host = nixpkgs.lib.nixosSystem {
+        modules = [
+          { pkgs, ... }:
+          {
+            environment.systemPackages = [
+              git-env.packages.${pkgs.stdenv.hostPlatform.system}.default
+            ];
+          }
+        ];
+      };
+    };
+}
+```
+
+## Usage
 
 ```bash
 echo ".gitenv" >> .gitignore
 echo ".env" > .gitenv
 
-git-env save -r origin -b gitenv/my-secrets -k ~/.ssh/id_ed25519.pub -p
+git-env save --remote origin --branch gitenv/my-secrets --push -k ~/.ssh/id_ed25519.pub
 
-git-env restore -r origin -b gitenv/my-secrets -i ~/.ssh/id_ed25519 -f
+git-env restore --remote origin --branch gitenv/my-secrets --fetch -i ~/.ssh/id_ed25519
 ```
 
-## Creating an archive
+## CLI
+
+### Saving an archive
 
 ```
 $ git-env save --help
@@ -48,7 +87,7 @@ Options:
   -h, --help                   Print help
 ```
 
-## Restoring an archive
+### Restoring an archive
 
 ```
 $ git-env restore --help
