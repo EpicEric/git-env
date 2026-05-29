@@ -32,6 +32,7 @@ pub struct SaveConfig {
     pub remote: String,
     pub branch: String,
     pub encrypted_data: String,
+    pub commit_message: String,
     pub config: PathBuf,
     pub public_keys_url: Vec<String>,
     pub public_key: Vec<PathBuf>,
@@ -165,7 +166,7 @@ pub fn gitenv_save(config: SaveConfig) -> color_eyre::Result<()> {
             None,
             &signature,
             &signature,
-            "git-env: save secrets",
+            &config.commit_message,
             &repo.find_tree(treebuilder.write()?)?,
             &[],
         )?;
