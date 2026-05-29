@@ -105,7 +105,11 @@ pub fn gitenv_save(config: SaveConfig) -> color_eyre::Result<()> {
     if recipients.is_empty() {
         return Err(eyre!("No keys provided."));
     }
-    println!("Using {} key(s) to encrypt...", recipients.len());
+    println!(
+        "Using {} {} to encrypt...",
+        recipients.len(),
+        if recipients.len() == 1 { "key" } else { "keys" },
+    );
 
     // Check if local branch exists
     if !config.force
@@ -144,7 +148,11 @@ pub fn gitenv_save(config: SaveConfig) -> color_eyre::Result<()> {
     if files.is_empty() {
         return Err(eyre!("No files matched the git-env configuration"));
     }
-    println!("Encrypting {} file(s)...", files.len());
+    println!(
+        "Encrypting {} {}...",
+        files.len(),
+        if files.len() == 1 { "file" } else { "files" },
+    );
 
     // Create commit containing the archive
     if !config.dry_run {
@@ -253,7 +261,11 @@ pub fn gitenv_restore(config: RestoreConfig) -> color_eyre::Result<()> {
     if identities.is_empty() {
         return Err(eyre!("No keys provided."));
     }
-    println!("Trying {} key(s) to decrypt...", identities.len());
+    println!(
+        "Trying to decrypt with {} {}...",
+        identities.len(),
+        if identities.len() == 1 { "key" } else { "keys" },
+    );
 
     let commit = if config.fetch {
         std::process::Command::new("git")
@@ -288,7 +300,12 @@ pub fn gitenv_restore(config: RestoreConfig) -> color_eyre::Result<()> {
 
     println!(
         "{}",
-        format!("Decrypted {} file(s).", decrypt_count).green()
+        format!(
+            "Decrypted {} {}.",
+            decrypt_count,
+            if decrypt_count == 1 { "file" } else { "files" },
+        )
+        .green()
     );
 
     Ok(())
@@ -308,7 +325,7 @@ pub(crate) fn gitenv_decrypt<R: Read>(
     for entry in tar::Archive::new(reader).entries()? {
         let mut entry = entry?;
         let path = entry.path()?;
-        println!("{}", format!("  {:?}", path).dimmed());
+        println!("{}", format!("  {}", path.to_string_lossy()).dimmed());
         if !force && fs::exists(path)? {
             if !yes_no_prompt("File already exists. Overwrite? [y/N] ".yellow())? {
                 return Err(eyre!("Operation aborted."));

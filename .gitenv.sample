@@ -1,2 +1,3 @@
 .env
 secrets
+test_dir/foo
