@@ -1,28 +1,30 @@
 # git-env
 
-CLI to encrypt and decrypt sensitive data in a git repository.
+Use your SSH keys to keep your sensitive data encrypted with your git repository.
 
-Simply drop a `.gitenv` file containing your gitignore'd secrets (with the same format as `.gitignore`), specify your encryption keys, and a branch containing your archive will be created for you.
+git-env is a CLI for encrypting and decrypting files in a separate branch of your repository. Simply drop a `.gitenv` file containing your gitignore'd secrets (with the same format as `.gitignore`), specify your encryption keys, and a branch containing your archive will be created for you.
 
 You can also push and fetch from your git remote, making it easy to share your secrets with your different machines or even with coworkers!
 
+Under the hood, it uses [age](https://age-encryption.org/v1) for encryption and tar for archiving.
+
 ## Installation
 
-## Cargo
+### Cargo
 
 ```bash
 cargo install --locked --git https://github.com/EpicEric/git-env.git
 ```
 
-## Nix
+### Nix
 
-### With npins
+#### With npins
 
 ```bash
 npins add github EpicEric git-env -b main
 ```
 
-### With flakes
+#### With flakes
 
 ```nix
 {
