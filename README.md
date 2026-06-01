@@ -24,6 +24,17 @@ cargo install --locked --git https://github.com/EpicEric/git-env.git
 npins add github EpicEric git-env -b main
 ```
 
+```nix
+{ ... }:
+let
+  sources = import ./npins;
+in {
+  environment.systemPackages = [
+    (import sources.git-env { })
+  ];
+}
+```
+
 #### With flakes
 
 ```nix

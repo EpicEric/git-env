@@ -1,5 +1,5 @@
 {
-  description = "CLI to encrypt and decrypt sensitive data in a git repository";
+  description = "Use your SSH keys to keep your sensitive data encrypted with your git repository";
 
   inputs = {
     crane = {
@@ -78,7 +78,7 @@
           program = lib.getExe self.packages.${system}.default;
           meta = {
             name = "git-env";
-            description = "CLI to encrypt and decrypt sensitive data in a git repository";
+            description = "Use your SSH keys to keep your sensitive data encrypted with your git repository";
             homepage = "https://github.com/EpicEric/git-env";
             license = lib.licenses.mit;
             mainProgram = "git-env";

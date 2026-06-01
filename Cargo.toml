@@ -1,6 +1,6 @@
 [package]
 name = "git-env"
-description = "CLI to encrypt and decrypt sensitive data in a git repository."
+description = "Use your SSH keys to keep your sensitive data encrypted with your git repository."
 version = "0.1.0"
 edition = "2024"
 

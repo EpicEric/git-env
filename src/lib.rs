@@ -113,7 +113,8 @@ pub fn gitenv_save(config: SaveConfig) -> color_eyre::Result<()> {
     );
 
     // Check if local branch exists
-    if !config.force
+    if !config.dry_run
+        && !config.force
         && repo
             .find_branch(&config.branch, git2::BranchType::Local)
             .is_ok()
@@ -174,25 +175,56 @@ pub fn gitenv_save(config: SaveConfig) -> color_eyre::Result<()> {
     }
 
     if config.push {
-        let remote_branch_name = format!("{}/{}", config.remote, config.branch);
-        if !config.force
-            && repo
-                .find_branch(&remote_branch_name, git2::BranchType::Remote)
-                .is_ok()
-        {
-            if !yes_no_prompt(
-                format!(
-                    "Remote branch '{}' already exists. Overwrite? [y/N] ",
-                    config.branch
-                )
-                .yellow(),
-            )? {
-                return Err(eyre!("Operation aborted."));
-            }
-        }
         if !config.dry_run {
             let status = std::process::Command::new("git")
-                .args(["push", &config.remote, &config.branch])
+                .args([
+                    "fetch",
+                    &config.remote,
+                    &format!(
+                        "refs/heads/{}:refs/remotes/{}/{}",
+                        config.branch, config.remote, config.branch
+                    ),
+                ])
+                .current_dir(repo.workdir().unwrap())
+                .status()?;
+
+            if !status.success() {
+                return Err(eyre!(
+                    "git fetch exited with status code {:?}",
+                    status.code()
+                ));
+            }
+
+            let remote_branch_name = format!("{}/{}", config.remote, config.branch);
+            if !config.force
+                && repo
+                    .find_branch(&remote_branch_name, git2::BranchType::Remote)
+                    .is_ok()
+            {
+                if !yes_no_prompt(
+                    format!(
+                        "Remote branch '{}' already exists. Overwrite? [y/N] ",
+                        config.branch
+                    )
+                    .yellow(),
+                )? {
+                    return Err(eyre!("Operation aborted."));
+                }
+            }
+        }
+        if config.dry_run {
+            println!(
+                "{}",
+                format!(
+                    "Not pushing to remote branch '{}' due to dry run.",
+                    config.branch
+                )
+                .cyan()
+            );
+        } else {
+            let status = std::process::Command::new("git")
+                .args(["push", "--force-with-lease", &config.remote, &config.branch])
+                .current_dir(repo.workdir().unwrap())
                 .status()?;
             if !status.success() {
                 return Err(eyre!(
@@ -200,10 +232,19 @@ pub fn gitenv_save(config: SaveConfig) -> color_eyre::Result<()> {
                     status.code()
                 ));
             }
+            println!(
+                "{}",
+                format!("Pushed to remote branch '{}'.", config.branch).green()
+            );
         }
+    } else if config.dry_run {
         println!(
             "{}",
-            format!("Pushed to remote branch '{}'.", config.branch).green()
+            format!(
+                "Not saving to local branch '{}' due to dry run.",
+                config.branch
+            )
+            .cyan()
         );
     } else {
         println!(
@@ -269,7 +310,7 @@ pub fn gitenv_restore(config: RestoreConfig) -> color_eyre::Result<()> {
     );
 
     let commit = if config.fetch {
-        std::process::Command::new("git")
+        let status = std::process::Command::new("git")
             .args([
                 "fetch",
                 &config.remote,
@@ -280,6 +321,13 @@ pub fn gitenv_restore(config: RestoreConfig) -> color_eyre::Result<()> {
             ])
             .current_dir(repo.workdir().unwrap())
             .status()?;
+
+        if !status.success() {
+            return Err(eyre!(
+                "git fetch exited with status code {:?}",
+                status.code()
+            ));
+        }
 
         let remote_branch_name = format!("{}/{}", config.remote, config.branch);
         let branch = repo.find_branch(&remote_branch_name, git2::BranchType::Remote)?;
@@ -299,15 +347,27 @@ pub fn gitenv_restore(config: RestoreConfig) -> color_eyre::Result<()> {
         config.dry_run,
     )?;
 
-    println!(
-        "{}",
-        format!(
-            "Decrypted {} {}.",
-            decrypt_count,
-            if decrypt_count == 1 { "file" } else { "files" },
-        )
-        .green()
-    );
+    if config.dry_run {
+        println!(
+            "{}",
+            format!(
+                "Not decrypting {} {} due to dry run.",
+                decrypt_count,
+                if decrypt_count == 1 { "file" } else { "files" },
+            )
+            .cyan()
+        );
+    } else {
+        println!(
+            "{}",
+            format!(
+                "Decrypted {} {}.",
+                decrypt_count,
+                if decrypt_count == 1 { "file" } else { "files" },
+            )
+            .green()
+        );
+    }
 
     Ok(())
 }
@@ -327,7 +387,7 @@ pub(crate) fn gitenv_decrypt<R: Read>(
         let mut entry = entry?;
         let path = entry.path()?;
         println!("{}", format!("  {}", path.to_string_lossy()).dimmed());
-        if !force && fs::exists(path)? {
+        if !dry_run && !force && fs::exists(path)? {
             if !yes_no_prompt("File already exists. Overwrite? [y/N] ".yellow())? {
                 return Err(eyre!("Operation aborted."));
             }
