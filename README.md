@@ -68,7 +68,9 @@ in {
 
 ```bash
 echo ".gitenv" >> .gitignore
+
 echo ".env" > .gitenv
+echo ".gitenv" >> .gitenv  # Optional: Make restore -> save idempotent
 
 git-env save --remote origin --branch gitenv/my-secrets --push -k ~/.ssh/id_ed25519.pub
 
