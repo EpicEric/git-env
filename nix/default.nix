@@ -25,7 +25,14 @@ let
     commonArgs
     // {
       inherit cargoArtifacts;
+      nativeBuildInputs = commonArgs.nativeBuildInputs ++ [ pkgs.installShellFiles ];
       meta.mainProgram = "git-env";
+      postInstall = ''
+        installShellCompletion --cmd git-env \
+          --bash <($out/bin/git-env completions bash) \
+          --fish <($out/bin/git-env completions fish) \
+          --zsh <($out/bin/git-env completions zsh)
+      '';
     }
   );
 in

@@ -1,7 +1,8 @@
 use std::{env::set_current_dir, path::PathBuf};
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, CommandFactory, Parser, Subcommand};
 
+use clap_complete::Shell;
 use git_env::{RestoreConfig, SaveConfig, gitenv_restore, gitenv_save};
 
 #[derive(Parser)]
@@ -91,6 +92,8 @@ enum CliCommand {
         #[arg(long)]
         force: bool,
     },
+    /// Generate shell completions.
+    Completions { shell: Shell },
 }
 
 fn main() -> color_eyre::Result<()> {
@@ -143,6 +146,14 @@ fn main() -> color_eyre::Result<()> {
                 fetch,
                 force,
             })?;
+        }
+        CliCommand::Completions { shell } => {
+            clap_complete::generate(
+                shell,
+                &mut Cli::command(),
+                env!("CARGO_PKG_NAME"),
+                &mut std::io::stdout(),
+            );
         }
     }
 
