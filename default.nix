@@ -1,18 +1,18 @@
 {
   system ? builtins.currentSystem,
-  sources ? import ./npins,
-  pkgs ? import sources.nixpkgs {
+  inputs ? import ./.tack,
+  pkgs ? import inputs.nixpkgs {
     inherit system;
-    overlays = [ (import sources.rust-overlay) ];
+    overlays = [ (import inputs.rust-overlay) ];
   },
-  craneLib ? (import sources.crane { inherit pkgs; }).overrideToolchain (
+  craneLib ? (import inputs.crane { inherit pkgs; }).overrideToolchain (
     ps: ps.rust-bin.stable.latest.default
   ),
 }:
 (import ./nix {
   inherit
     system
-    sources
+    inputs
     pkgs
     craneLib
     ;

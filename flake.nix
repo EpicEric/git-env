@@ -1,24 +1,13 @@
 {
   description = "Use your SSH keys to keep your sensitive data encrypted with your git repository";
 
-  inputs = {
-    crane = {
-      url = "path:./nix/dummy.nix";
-      flake = false;
-    };
-    nixpkgs = {
-      url = "path:./nix/dummy.nix";
-      flake = false;
-    };
-    rust-overlay = {
-      url = "path:./nix/dummy.nix";
-      flake = false;
-    };
-  };
-
   outputs =
-    { self, ... }@inputs:
+    { self, ... }@args:
     let
+      inputs = (import ./.tack) {
+        overrides = args.tackOverrides or { };
+      };
+
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -44,15 +33,11 @@
     eachSystem (
       system:
       let
-        sources = import ./npins;
-        importInput =
-          attr:
-          if import inputs.${attr} ? __isDummyInput then import sources.${attr} else import inputs.${attr};
-        pkgs = importInput "nixpkgs" {
+        pkgs = import inputs.nixpkgs {
           inherit system;
-          overlays = [ (importInput "rust-overlay") ];
+          overlays = [ (import inputs.rust-overlay) ];
         };
-        craneLib = (importInput "crane" { inherit pkgs; }).overrideToolchain (
+        craneLib = (import inputs.crane { inherit pkgs; }).overrideToolchain (
           p: p.rust-bin.stable.latest.default
         );
 
